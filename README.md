@@ -50,6 +50,11 @@ gcs.insert_object("myBucket", "myObject", io)
 gcs.copy_tree("gs://myBucket1/src", "gs://myBucket2/dest")
 
 # delete recursively
-gcs.remove_tree("gs://myBucket1/dir")
+gcs.remove_tree("gs://myBucket/dir")
+
+# read object content with size limitation
+gcs.read_partial("gs://myBucket/myObject", limit: 1024) # => read first part of object at least 1024 bytes.
+gcs.read_partial("myBucket", "myObjet", limit: 1024)
+gcs.read_partial("gs://myBucket/myObject", limit: 1024, trim_after_last_delimiter: "\n") #=> remove substr after last "\n"
 ```
 
