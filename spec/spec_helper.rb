@@ -10,13 +10,16 @@ end
 
 RSpec.configure do |config|
   if ENV["SERVICE_ACCOUNT_JSON"]
-    $credential_available = true
     config.before(:each) do
+      @credential_available = true
       json = JSON.parse(ENV["SERVICE_ACCOUNT_JSON"])
       @email = json["client_email"]
       @private_key = OpenSSL::PKey::RSA.new(json["private_key"])
     end
   else
-    $credential_available = false
+    config.before(:each) do
+      # explicit initialization to suppress warning
+      $credential_available = false
+    end
   end
 end
