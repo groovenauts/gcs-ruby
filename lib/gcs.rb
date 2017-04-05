@@ -3,7 +3,7 @@
 require "gcs/version"
 require "google/apis/storage_v1"
 
-module Gcs
+class Gcs
   include Google::Apis::StorageV1
   def initialize(email_address = nil, private_key = nil, scope: "cloud-platform")
     @api = Google::Apis::StorageV1::StorageService.new
