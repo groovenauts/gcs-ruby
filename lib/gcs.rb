@@ -48,7 +48,7 @@ class Gcs
     end
   end
 
-  def read_partial(bucket, object=nil, limit: 1024*1024, &blk)
+  def read_partial(bucket, object=nil, limit: 1024*1024, trim_after_last_delimiter: nil, &blk)
     bucket, object = _ensure_bucket_object(bucket, object)
     begin
       uri = URI("https://www.googleapis.com/download/storage/v1/b/#{bucket}/o/#{CGI.escape(object)}?alt=media")
@@ -68,6 +68,10 @@ class Gcs
                 if total.bytesize > limit
                   break
                 end
+              end
+              if trim_after_last_delimiter
+                i = total.rindex(trim_after_last_delimiter.force_encoding(Encoding::ASCII_8BIT))
+                total[(i+1)..-1] = ""
               end
               return total
             end
