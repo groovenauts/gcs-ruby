@@ -1,5 +1,7 @@
 # gcs-ruby
 
+[![Build Status](https://travis-ci.org/groovenauts/gcs-ruby.svg?branch=master)](https://travis-ci.org/groovenauts/gcs-ruby)
+
 Groovenauts' wrapper library for Google Cloud Storage with [google-api-ruby-client](https://github.com/google/google-api-ruby-client).
 
 ## Installation
