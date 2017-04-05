@@ -48,6 +48,39 @@ class Gcs
     end
   end
 
+  def read_partial(bucket, object=nil, limit: 1024*1024, &blk)
+    bucket, object = _ensure_bucket_object(bucket, object)
+    begin
+      uri = URI("https://www.googleapis.com/download/storage/v1/b/#{bucket}/o/#{CGI.escape(object)}?alt=media")
+      Net::HTTP.start(uri.host, uri.port, use_ssl: true) do |http|
+        req = Net::HTTP::Get.new(uri.request_uri)
+        req["Authorization"] = "Bearer #{@api.authorization.access_token}"
+        http.request(req) do |res|
+          case res
+          when Net::HTTPSuccess
+            if blk
+              res.read_body(&blk)
+              return res
+            else
+              total = "".force_encoding(Encoding::ASCII_8BIT)
+              res.read_body do |part|
+                total << part
+                if total.bytesize > limit
+                  break
+                end
+              end
+              return total
+            end
+          when Net::HTTPNotFound
+            return nil
+          else
+            raise "Gcs.read_partial failed with HTTP status #{res.code}: #{res.body}"
+          end
+        end
+      end
+    end
+  end
+
   def list_objects(bucket, delimiter: "/", prefix: "", page_token: nil, max_results: nil)
     @api.list_objects(bucket, delimiter: delimiter, prefix: prefix, page_token: page_token, max_results: max_results)
   end
