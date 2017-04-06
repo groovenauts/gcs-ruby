@@ -19,7 +19,7 @@ RSpec.configure do |config|
   else
     config.before(:each) do
       # explicit initialization to suppress warning
-      $credential_available = false
+      @credential_available = false
     end
   end
 end
