@@ -4,5 +4,5 @@ rvm:
   - 2.4.1
   - 2.3.4
 before_install:
-  - openssl aes-256-cbc -K $encrypted_22290c477736_key -iv $encrypted_22290c477736_iv -in config/service_account.json.enc -out config/service_account.json -d
+  - if [ "${TRAVIS_SECURE_ENV_VARS}" = true ]; then openssl aes-256-cbc -K $encrypted_22290c477736_key -iv $encrypted_22290c477736_iv -in config/service_account.json.enc -out config/service_account.json -d; fi
 
