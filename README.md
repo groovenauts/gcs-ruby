@@ -58,5 +58,12 @@ gcs.remove_tree("gs://myBucket/dir")
 gcs.read_partial("gs://myBucket/myObject", limit: 1024) # => read first part of object at least 1024 bytes.
 gcs.read_partial("myBucket", "myObjet", limit: 1024)
 gcs.read_partial("gs://myBucket/myObject", limit: 1024, trim_after_last_delimiter: "\n") #=> remove substr after last "\n"
+
+# initiate resumable upload
+# return session URL to upload object content by PUT method requests.
+# see https://cloud.google.com/storage/docs/json_api/v1/how-tos/resumable-upload
+# origin_domain keyword arg was for CORS setting.
+gcs.initiate_resumable_upload("myBucket", "myObject", content_type: "text/plain", origin_domain: "http://example.com")
+gcs.initiate_resumable_upload("gs://myBucket/myObject", content_type: "text/plain", origin_domain: "http://example.com")
 ```
 

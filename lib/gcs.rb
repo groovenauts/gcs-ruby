@@ -91,7 +91,7 @@ class Gcs
     @api.list_objects(bucket, delimiter: delimiter, prefix: prefix, page_token: page_token, max_results: max_results)
   end
 
-  def delete_object(bucket, object)
+  def delete_object(bucket, object=nil)
     bucket, object = _ensure_bucket_object(bucket, object)
     @api.delete_object(bucket, object)
   end
@@ -160,6 +160,23 @@ class Gcs
       end
       break unless res.next_page_token
       next_page_token = res.next_page_token
+    end
+  end
+
+  def initiate_resumable_upload(bucket, object=nil, content_type: "application/octet-stream", origin_domain: nil)
+    bucket, object = _ensure_bucket_object(bucket, object)
+    uri = URI("https://www.googleapis.com/upload/storage/v1/b/#{CGI.escape(bucket)}/o?uploadType=resumable")
+    http = Net::HTTP.start(uri.host, uri.port, use_ssl: true) do |http|
+      req = Net::HTTP::Post.new(uri.request_uri)
+      req["content-type"] = "application/json; charset=UTF-8"
+      req["Authorization"] = "Bearer #{@api.authorization.access_token}"
+      req["X-Upload-Content-Type"] = content_type
+      if origin_domain
+        req["Origin"] = origin_domain
+      end
+      req.body = JSON.generate({ "name" => object })
+      res = http.request(req)
+      return res["location"]
     end
   end
 end
