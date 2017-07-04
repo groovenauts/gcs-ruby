@@ -30,13 +30,16 @@ class Gcs
     @api.list_buckets(project_id, max_results: 1000).items || []
   end
 
-  def _ensure_bucket_object(bucket, object)
+  def self.ensure_bucket_object(bucket, object=nil)
     if object.nil? and bucket.start_with?("gs://")
-      uri = URI(bucket)
-      bucket = uri.host
-      object = uri.path[1..-1]
+      bucket = bucket.sub(%r{\Ags://}, "")
+      bucket, object = bucket.split("/", 2)
     end
     return [bucket, object]
+  end
+
+  def _ensure_bucket_object(bucket, object=nil)
+    self.class.ensure_bucket_object(bucket, object)
   end
 
   def get_object(bucket, object=nil, download_dest: nil)
@@ -54,7 +57,7 @@ class Gcs
 
   def read_partial(bucket, object=nil, limit: 1024*1024, trim_after_last_delimiter: nil, &blk)
     bucket, object = _ensure_bucket_object(bucket, object)
-    uri = URI("https://www.googleapis.com/download/storage/v1/b/#{bucket}/o/#{CGI.escape(object)}?alt=media")
+    uri = URI("https://www.googleapis.com/download/storage/v1/b/#{CGI.escape(bucket)}/o/#{CGI.escape(object)}?alt=media")
     Net::HTTP.start(uri.host, uri.port, use_ssl: true) do |http|
       req = Net::HTTP::Get.new(uri.request_uri)
       req["Authorization"] = "Bearer #{@api.authorization.access_token}"
@@ -110,12 +113,8 @@ class Gcs
   end
 
   def copy_tree(src, dest)
-    src_url = URI(src)
-    dest_url = URI(dest)
-    src_bucket = src_url.host
-    src_path = src_url.path[1..-1]
-    dest_bucket = dest_url.host
-    dest_path = dest_url.path[1..-1]
+    src_bucket, src_path = self.class.ensure_bucket_object(src)
+    dest_bucket, dest_path = _ensure_bucket_object(dest, nil)
     src_path = src_path + "/" unless src_path[-1] == "/"
     dest_path = dest_path + "/" unless dest_path[-1] == "/"
     res = list_objects(src_bucket, prefix: src_path)
@@ -132,9 +131,7 @@ class Gcs
   end
 
   def remove_tree(gcs_url)
-    url = URI(gcs_url)
-    bucket = url.host
-    path = url.path[1..-1]
+    bucket, path = self.class.ensure_bucket_object(gcs_url)
     path = path + "/" unless path[-1] == "/"
     next_page_token = nil
     loop do
@@ -164,7 +161,7 @@ class Gcs
   end
 
   def initiate_resumable_upload(bucket, object=nil, content_type: "application/octet-stream", origin_domain: nil)
-    bucket, object = _ensure_bucket_object(bucket, object)
+    bucket, object = self.class.ensure_bucket_object(bucket, object)
     uri = URI("https://www.googleapis.com/upload/storage/v1/b/#{CGI.escape(bucket)}/o?uploadType=resumable")
     http = Net::HTTP.start(uri.host, uri.port, use_ssl: true) do |http|
       req = Net::HTTP::Post.new(uri.request_uri)
