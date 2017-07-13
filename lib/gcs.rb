@@ -120,10 +120,11 @@ class Gcs
     res = list_objects(src_bucket, prefix: src_path)
     (res.items || []).each do |o|
       next if o.name[-1] == "/"
-      buf = StringIO.new("".b)
-      get_object(src_bucket, o.name, download_dest: buf)
       dest_obj_name = dest_path + o.name.sub(/\A#{Regexp.escape(src_path)}/, "")
-      insert_object(dest_bucket, dest_obj_name, buf)
+      r = @api.rewrite_object(src_bucket, o.name, dest_bucket, dest_obj_name)
+      until r.done
+        r = @api.rewrite_object(src_bucket, o.name, dest_bucket, dest_obj_name, rewite_token: r.rewrite_token)
+      end
     end
     (res.prefixes || []).each do |p|
       copy_tree("gs://#{src_bucket}/#{p}", "gs://#{dest_bucket}/#{dest_path}#{p.sub(/\A#{Regexp.escape(src_path)}/, "")}")
