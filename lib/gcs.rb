@@ -112,10 +112,6 @@ class Gcs
     @api.insert_object(bucket, obj, content_encoding: content_encoding, upload_source: source, content_type: content_type)
   end
 
-  def copy_object(src_bucket, src_object, dest_bucket, dest_object, object: nil)
-    @api.copy_object(src_bucket, src_object, dest_bucket, dest_object)
-  end
-
   def copy_tree(src, dest)
     src_bucket, src_path = self.class.ensure_bucket_object(src)
     dest_bucket, dest_path = _ensure_bucket_object(dest, nil)
@@ -125,7 +121,10 @@ class Gcs
     (res.items || []).each do |o|
       next if o.name[-1] == "/"
       dest_obj_name = dest_path + o.name.sub(/\A#{Regexp.escape(src_path)}/, "")
-      copy_object(src_bucket, o.name, dest_bucket, dest_obj_name)
+      r = @api.rewrite_object(src_bucket, o.name, dest_bucket, dest_obj_name)
+      until r.done
+        r = @api.rewrite_object(src_bucket, o.name, dest_bucket, dest_obj_name, rewite_token: r.rewrite_token)
+      end
     end
     (res.prefixes || []).each do |p|
       copy_tree("gs://#{src_bucket}/#{p}", "gs://#{dest_bucket}/#{dest_path}#{p.sub(/\A#{Regexp.escape(src_path)}/, "")}")
