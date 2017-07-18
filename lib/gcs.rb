@@ -112,23 +112,34 @@ class Gcs
     @api.insert_object(bucket, obj, content_encoding: content_encoding, upload_source: source, content_type: content_type)
   end
 
+  def rewrite(src_bucket, src_object, dest_bucket, dest_object)
+    r = @api.rewrite_object(src_bucket, src_object, dest_bucket, dest_object)
+    until r.done
+      r = @api.rewrite_object(src_bucket, src_object, dest_bucket, dest_object, rewite_token: r.rewrite_token)
+    end
+    r
+  end
+
   def copy_tree(src, dest)
     src_bucket, src_path = self.class.ensure_bucket_object(src)
-    dest_bucket, dest_path = _ensure_bucket_object(dest, nil)
+    dest_bucket, dest_path = self.class.ensure_bucket_object(dest)
     src_path = src_path + "/" unless src_path[-1] == "/"
     dest_path = dest_path + "/" unless dest_path[-1] == "/"
     res = list_objects(src_bucket, prefix: src_path)
     (res.items || []).each do |o|
       next if o.name[-1] == "/"
       dest_obj_name = dest_path + o.name.sub(/\A#{Regexp.escape(src_path)}/, "")
-      r = @api.rewrite_object(src_bucket, o.name, dest_bucket, dest_obj_name)
-      until r.done
-        r = @api.rewrite_object(src_bucket, o.name, dest_bucket, dest_obj_name, rewite_token: r.rewrite_token)
-      end
+      self.rewrite(src_bucket, o.name, dest_bucket, dest_obj_name)
     end
     (res.prefixes || []).each do |p|
       copy_tree("gs://#{src_bucket}/#{p}", "gs://#{dest_bucket}/#{dest_path}#{p.sub(/\A#{Regexp.escape(src_path)}/, "")}")
     end
+  end
+
+  def copy_object(src, dest)
+    src_bucket, src_path = self.class.ensure_bucket_object(src)
+    dest_bucket, dest_path = self.class.ensure_bucket_object(dest)
+    self.rewrite(src_bucket, src_path, dest_bucket, dest_path)
   end
 
   def remove_tree(gcs_url)
