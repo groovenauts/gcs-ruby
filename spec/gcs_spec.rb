@@ -36,5 +36,11 @@ describe Gcs do
       buf = @api.read_partial("gs://gcp-public-data-landsat/index.csv.gz", limit: 100)
       expect(buf.bytesize).to be < 4*1024
     end
+    context "trim_after_last_delimiter without matching delimiter" do
+      it "return empty string" do
+        buf = @api.read_partial("gs://gcp-public-data-landsat/index.csv.gz", limit: 1, trim_after_last_delimiter: "x00")
+        expect(buf.bytesize).to eql(0)
+      end
+    end
   end
 end
