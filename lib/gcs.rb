@@ -77,6 +77,11 @@ class Gcs
             end
             if trim_after_last_delimiter
               i = total.rindex(trim_after_last_delimiter.force_encoding(Encoding::ASCII_8BIT))
+              if i.nil?
+                # If no delimiter was found, return empty string.
+                # This is because caller expect not to incomplete line. (ex: Newline Delimited JSON)
+                i = -1
+              end
               total[(i+1)..-1] = ""
             end
             return total
