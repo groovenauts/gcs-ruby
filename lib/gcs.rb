@@ -57,7 +57,7 @@ class Gcs
 
   def read_partial(bucket, object=nil, limit: 1024*1024, trim_after_last_delimiter: nil, &blk)
     bucket, object = _ensure_bucket_object(bucket, object)
-    uri = URI("https://www.googleapis.com/download/storage/v1/b/#{CGI.escape(bucket)}/o/#{CGI.escape(object)}?alt=media")
+    uri = URI("https://www.googleapis.com/download/storage/v1/b/#{CGI.escape(bucket)}/o/#{CGI.escape(object).gsub("+", "%20")}?alt=media")
     Net::HTTP.start(uri.host, uri.port, use_ssl: true) do |http|
       req = Net::HTTP::Get.new(uri.request_uri)
       req["Authorization"] = "Bearer #{@api.authorization.access_token}"
