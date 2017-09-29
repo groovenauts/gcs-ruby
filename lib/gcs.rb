@@ -149,7 +149,9 @@ class Gcs
 
   def remove_tree(gcs_url)
     bucket, path = self.class.ensure_bucket_object(gcs_url)
-    path = path + "/" unless path[-1] == "/"
+    if path.size > 0 and path[-1] != "/"
+      path = path + "/"
+    end
     next_page_token = nil
     loop do
       begin
