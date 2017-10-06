@@ -40,11 +40,12 @@ class Gcs
     end
   end
 
-  def insert_bucket(project_id, name, storage_class: "MULTI_REGIONAL", acl: nil, default_object_acl: nil, location: nil)
+  def insert_bucket(project_id, name, storage_class: "STANDARD", acl: nil, default_object_acl: nil, location: nil)
     b = Bucket.new(
       name: name,
-      location: location,
+      storage_class: storage_class
     )
+    b.location = location if location
     b.acl = acl if acl
     b.default_object_acl = default_object_acl if default_object_acl
     @api.insert_bucket(project_id, b)
