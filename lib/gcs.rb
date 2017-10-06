@@ -30,6 +30,36 @@ class Gcs
     @api.list_buckets(project_id, max_results: 1000).items || []
   end
 
+  def bucket(name)
+    @api.get_bucket(name)
+  rescue Google::Apis::ClientError
+    if $!.status_code == 404
+      return nil
+    else
+      raise
+    end
+  end
+
+  def insert_bucket(project_id, name, storage_class: "MULTI_REGIONAL", acl: nil, default_object_acl: nil, location: nil)
+    b = Bucket.new(
+      name: name,
+      location: location,
+    )
+    b.acl = acl if acl
+    b.default_object_acl = default_object_acl if default_object_acl
+    @api.insert_bucket(project_id, b)
+  end
+
+  def delete_bucket(name)
+    @api.delete_bucket(name)
+  rescue Google::Apis::ClientError
+    if $!.status_code == 404
+      return nil
+    else
+      raise
+    end
+  end
+
   def self.ensure_bucket_object(bucket, object=nil)
     if object.nil? and bucket.start_with?("gs://")
       bucket = bucket.sub(%r{\Ags://}, "")
