@@ -151,7 +151,7 @@ class Gcs
   def rewrite(src_bucket, src_object, dest_bucket, dest_object)
     r = @api.rewrite_object(src_bucket, src_object, dest_bucket, dest_object)
     until r.done
-      r = @api.rewrite_object(src_bucket, src_object, dest_bucket, dest_object, rewite_token: r.rewrite_token)
+      r = @api.rewrite_object(src_bucket, src_object, dest_bucket, dest_object, rewrite_token: r.rewrite_token)
     end
     r
   end
