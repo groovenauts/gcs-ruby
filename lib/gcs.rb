@@ -130,9 +130,9 @@ class Gcs
     @api.list_objects(bucket, delimiter: delimiter, prefix: prefix, page_token: page_token, max_results: max_results)
   end
 
-  def delete_object(bucket, object=nil)
+  def delete_object(bucket, object=nil, if_generation_match: nil)
     bucket, object = _ensure_bucket_object(bucket, object)
-    @api.delete_object(bucket, object)
+    @api.delete_object(bucket, object, if_generation_match: if_generation_match)
   end
 
   # @param [String] bucket
@@ -142,16 +142,17 @@ class Gcs
   # @param [String] content_encoding
   #
   # @return [Google::Apis::StorageV1::Object]
-  def insert_object(bucket, name, source, content_type: nil, content_encoding: nil)
+  def insert_object(bucket, name, source, content_type: nil, content_encoding: nil, if_generation_match: nil)
     bucket, name = _ensure_bucket_object(bucket, name)
     obj = Google::Apis::StorageV1::Object.new(name: name)
-    @api.insert_object(bucket, obj, content_encoding: content_encoding, upload_source: source, content_type: content_type)
+    @api.insert_object(bucket, obj, content_encoding: content_encoding, upload_source: source, content_type: content_type,
+                       if_generation_match: if_generation_match)
   end
 
-  def rewrite(src_bucket, src_object, dest_bucket, dest_object)
-    r = @api.rewrite_object(src_bucket, src_object, dest_bucket, dest_object)
+  def rewrite(src_bucket, src_object, dest_bucket, dest_object, if_generation_match: nil)
+    r = @api.rewrite_object(src_bucket, src_object, dest_bucket, dest_object, if_generation_match: if_generation_match)
     until r.done
-      r = @api.rewrite_object(src_bucket, src_object, dest_bucket, dest_object, rewrite_token: r.rewrite_token)
+      r = @api.rewrite_object(src_bucket, src_object, dest_bucket, dest_object, rewrite_token: r.rewrite_token, if_generation_match: if_generation_match)
     end
     r
   end
