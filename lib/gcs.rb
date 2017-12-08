@@ -76,11 +76,7 @@ class Gcs
   def get_object(bucket, object=nil, download_dest: nil)
     bucket, object = _ensure_bucket_object(bucket, object)
     begin
-      obj = @api.get_object(bucket, object)
-      if download_dest
-        @api.get_object(bucket, object, generation: obj.generation, download_dest: download_dest)
-      end
-      obj
+      @api.get_object(bucket, object, download_dest: download_dest)
     rescue Google::Apis::ClientError
       if $!.status_code == 404
         return nil
