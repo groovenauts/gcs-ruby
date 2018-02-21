@@ -95,7 +95,7 @@ class Gcs
     uri = URI("https://www.googleapis.com/download/storage/v1/b/#{CGI.escape(bucket)}/o/#{CGI.escape(object).gsub("+", "%20")}?alt=media")
     Net::HTTP.start(uri.host, uri.port, use_ssl: true) do |http|
       req = Net::HTTP::Get.new(uri.request_uri)
-      req["Authorization"] = "Bearer #{@api.authorization.access_token}"
+      req["Authorization"] = "Bearer #{fetch_access_token}"
       http.request(req) do |res|
         case res
         when Net::HTTPSuccess
@@ -221,7 +221,7 @@ class Gcs
     http = Net::HTTP.start(uri.host, uri.port, use_ssl: true) do |http|
       req = Net::HTTP::Post.new(uri.request_uri)
       req["content-type"] = "application/json; charset=UTF-8"
-      req["Authorization"] = "Bearer #{@api.authorization.access_token}"
+      req["Authorization"] = "Bearer #{fetch_access_token}"
       req["X-Upload-Content-Type"] = content_type
       if origin_domain
         req["Origin"] = origin_domain
@@ -230,5 +230,13 @@ class Gcs
       res = http.request(req)
       return res["location"]
     end
+  end
+
+  def fetch_access_token
+    auth = @api.authorization
+    if Time.now - auth.issued_at > auth.expires_in - 60 # set some margin to get rid of clock deviation etc.
+      auth.refresh!
+    end
+    auth.access_token
   end
 end
