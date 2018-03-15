@@ -43,4 +43,35 @@ describe Gcs do
       end
     end
   end
+
+  describe "list_objects" do
+    before do
+      skip "credential required." unless @credential_available
+      @api = Gcs.new(@email, @private_key)
+    end
+    let(:root_items){ ["index.csv.gz"] }
+    let(:root_prefixes){ %w{ LC08/ LE00/ LE07/ LM01/ LM02/ LM03/ LM04/ LM05/ LO08/ LT00/ LT04/ LT05/ LT08/ } }
+    let(:lc08_items){ ["LC08/01_$folder$"] }
+    let(:lc08_prefixes){ %w{ LC08/01/ LC08/PRE/ } }
+    context "with bucket and empty prefix" do
+      it "return items and prefixes" do
+        res = @api.list_objects("gcp-public-data-landsat", prefix: "")
+        expect(res.items.map(&:name)).to eql(root_items)
+        expect(res.prefixes).to eql(root_prefixes)
+        res = @api.list_objects("gcp-public-data-landsat", prefix: "LC08/")
+        expect(res.items.map(&:name)).to eql(lc08_items)
+        expect(res.prefixes).to eql(lc08_prefixes)
+      end
+    end
+    context "with GCS URL" do
+      it "return items and prefixes" do
+        res = @api.list_objects("gs://gcp-public-data-landsat/")
+        expect(res.items.map(&:name)).to eql(root_items)
+        expect(res.prefixes).to eql(root_prefixes)
+        res = @api.list_objects("gs://gcp-public-data-landsat/LC08/")
+        expect(res.items.map(&:name)).to eql(lc08_items)
+        expect(res.prefixes).to eql(lc08_prefixes)
+      end
+    end
+  end
 end
