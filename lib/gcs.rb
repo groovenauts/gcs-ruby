@@ -131,6 +131,9 @@ class Gcs
   end
 
   def list_objects(bucket, delimiter: "/", prefix: "", page_token: nil, max_results: nil)
+    if bucket.start_with?("gs://")
+      bucket, prefix = _ensure_bucket_object(bucket)
+    end
     @api.list_objects(bucket, delimiter: delimiter, prefix: prefix, page_token: page_token, max_results: max_results)
   end
 
