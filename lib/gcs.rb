@@ -9,8 +9,9 @@ require "google/apis/storage_v1"
 
 class Gcs
   include Google::Apis::StorageV1
-  def initialize(email_address = nil, private_key = nil, scope: "cloud-platform")
+  def initialize(email_address = nil, private_key = nil, scope: "cloud-platform", request_options: {retries: 10})
     @api = Google::Apis::StorageV1::StorageService.new
+    @api.request_options = @api.request_options.merge(request_options)
     scope_url = "https://www.googleapis.com/auth/#{scope}"
     if email_address and private_key
       auth = Signet::OAuth2::Client.new(
