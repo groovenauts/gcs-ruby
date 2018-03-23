@@ -74,4 +74,18 @@ describe Gcs do
       end
     end
   end
+
+  describe "#glob" do
+    before do
+      skip "credential required." unless @credential_available
+      @api = Gcs.new(@email, @private_key)
+    end
+    let(:pattern){ "gs://gcp-public-data-landsat/LC08/01/101/240/*/*.TIF" }
+    it "yields matched objects" do
+      items = []
+      @api.glob(pattern) {|obj| items << obj.name }
+      expect(items.size).to eql(36)
+      expect(items.all?{|name| File.fnmatch("LC08/01/101/240/*/*.TIF", name) }).to be(true)
+    end
+  end
 end
