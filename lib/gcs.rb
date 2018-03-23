@@ -243,4 +243,21 @@ class Gcs
     end
     auth.access_token
   end
+
+  def glob(bucket, object=nil)
+    bucket, object_pattern = self.class.ensure_bucket_object(bucket, object)
+    prefix, = object_pattern.split(/(?<!\\)\*/, 2)
+    page_token = nil
+    loop do
+      ret = list_objects(bucket, prefix: prefix, delimiter: nil, page_token: page_token)
+      (ret.items || []).each do |obj|
+        if File.fnmatch(object_pattern, obj.name)
+          yield obj
+        end
+      end
+      page_token = ret.next_page_token
+      break if page_token.nil?
+    end
+    nil
+  end
 end
