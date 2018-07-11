@@ -187,6 +187,42 @@ class Gcs
     self.rewrite(src_bucket, src_path, dest_bucket, dest_path)
   end
 
+  def compose_object(source_objs, dest, content_type: nil, content_encoding: nil)
+    source_objs = Array(source_objs)
+    if source_objs.size > 32
+      raise "The number of components to be composed into single object should be equal or less than 32."
+    end
+    dest_bucket, dest_object = self.class.ensure_bucket_object(dest)
+    source_bucket = nil
+    sobjs = []
+    source_objs.each do |spat|
+      b, _ = self.class.ensure_bucket_object(spat)
+      source_bucket ||= b
+      unless source_bucket == b and source_bucket == dest_bucket
+        raise "The all components objects should be placed in the same bucket to compose objects."
+      end
+      matched_names = []
+      glob(spat) do |obj|
+        matched_names << obj.name
+        if (sobjs | matched_names).size > 32
+          raise "The number of components to be composed into single object should be equal or less than 32."
+        end
+      end
+      if matched_names.empty?
+        raise "No object found or no matched objects found for '#{spat}'"
+      end
+      sobjs |= matched_names
+    end
+    dest_obj = Google::Apis::StorageV1::Object.new(
+      bucket: dest_bucket,
+      name: dest_object,
+      content_type: content_type,
+      content_encoding: content_encoding)
+    @api.compose_object(dest_bucket, dest_object,
+                        Google::Apis::StorageV1::ComposeRequest.new(destination: dest_obj,
+                                                                    source_objects: sobjs.map{|so| Google::Apis::StorageV1::ComposeRequest::SourceObject.new(name: so) }))
+  end
+
   def remove_tree(gcs_url)
     bucket, path = self.class.ensure_bucket_object(gcs_url)
     if path.size > 0 and path[-1] != "/"
