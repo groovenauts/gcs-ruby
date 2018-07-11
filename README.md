@@ -65,5 +65,9 @@ gcs.read_partial("gs://myBucket/myObject", limit: 1024, trim_after_last_delimite
 # origin_domain keyword arg was for CORS setting.
 gcs.initiate_resumable_upload("myBucket", "myObject", content_type: "text/plain", origin_domain: "http://example.com")
 gcs.initiate_resumable_upload("gs://myBucket/myObject", content_type: "text/plain", origin_domain: "http://example.com")
+
+# compose objects
+gcs.compose_object(["gs://myBucket/myObject-1", "gs://myBucket/myObject-2"], "gs://myBucket/composedObject")
+gcs.compose_object("gs://myBucket/myObject-*", "gs://myBucket/composedObject")
 ```
 
