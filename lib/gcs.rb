@@ -187,7 +187,7 @@ class Gcs
     self.rewrite(src_bucket, src_path, dest_bucket, dest_path)
   end
 
-  def compose_object(source_objs, dest)
+  def compose_object(source_objs, dest, content_type: nil, content_encoding: nil)
     source_objs = Array(source_objs)
     if source_objs.size > 32
       raise "The number of components to be composed into single object should be equal or less than 32."
@@ -213,8 +213,13 @@ class Gcs
       end
       sobjs |= matched_names
     end
+    dest_obj = Google::Apis::StorageV1::Object.new(
+      bucket: dest_bucket,
+      name: dest_object,
+      content_type: content_type,
+      content_encoding: content_encoding)
     @api.compose_object(dest_bucket, dest_object,
-                        Google::Apis::StorageV1::ComposeRequest.new(destination: Google::Apis::StorageV1::Object.new(bucket: dest_bucket, name: dest_object),
+                        Google::Apis::StorageV1::ComposeRequest.new(destination: dest_obj,
                                                                     source_objects: sobjs.map{|so| Google::Apis::StorageV1::ComposeRequest::SourceObject.new(name: so) }))
   end
 
