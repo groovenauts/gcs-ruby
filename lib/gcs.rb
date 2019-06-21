@@ -93,7 +93,7 @@ class Gcs
 
   def read_partial(bucket, object=nil, limit: 1024*1024, trim_after_last_delimiter: nil, &blk)
     bucket, object = _ensure_bucket_object(bucket, object)
-    uri = URI("https://www.googleapis.com/download/storage/v1/b/#{CGI.escape(bucket)}/o/#{CGI.escape(object).gsub("+", "%20")}?alt=media")
+    uri = URI("https://storage.googleapis.com/download/storage/v1/b/#{CGI.escape(bucket)}/o/#{CGI.escape(object).gsub("+", "%20")}?alt=media")
     Net::HTTP.start(uri.host, uri.port, use_ssl: true) do |http|
       req = Net::HTTP::Get.new(uri.request_uri)
       req["Authorization"] = "Bearer #{fetch_access_token}"
@@ -257,7 +257,7 @@ class Gcs
 
   def initiate_resumable_upload(bucket, object=nil, content_type: "application/octet-stream", origin_domain: nil)
     bucket, object = self.class.ensure_bucket_object(bucket, object)
-    uri = URI("https://www.googleapis.com/upload/storage/v1/b/#{CGI.escape(bucket)}/o?uploadType=resumable")
+    uri = URI("https://storage.googleapis.com/upload/storage/v1/b/#{CGI.escape(bucket)}/o?uploadType=resumable")
     http = Net::HTTP.start(uri.host, uri.port, use_ssl: true) do |http|
       req = Net::HTTP::Post.new(uri.request_uri)
       req["content-type"] = "application/json; charset=UTF-8"
