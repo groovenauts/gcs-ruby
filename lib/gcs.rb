@@ -7,6 +7,8 @@ require "json"
 require "gcs/version"
 require "google/apis/storage_v1"
 
+require_relative "gcs/gcs_writer"
+
 class Gcs
   include Google::Apis::StorageV1
   def initialize(email_address = nil, private_key = nil, scope: "cloud-platform", request_options: {retries: 10})
