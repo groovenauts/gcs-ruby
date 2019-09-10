@@ -1,11 +1,6 @@
 # coding: utf-8
 
 require "net/http"
-require "cgi"
-require "json"
-
-require "gcs/version"
-require "google/apis/storage_v1"
 
 class Gcs
   class GcsWriter
