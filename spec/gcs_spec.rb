@@ -84,7 +84,7 @@ describe Gcs do
     it "yields matched objects" do
       items = []
       @api.glob(pattern) {|obj| items << obj.name }
-      expect(items.size).to eql(228)
+      expect(items.size).to eql(252)
       expect(items.all?{|name| File.fnmatch("LC08/01/101/240/*/*.TIF", name) }).to be(true)
     end
   end
