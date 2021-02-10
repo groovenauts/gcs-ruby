@@ -49,7 +49,7 @@ describe Gcs do
       skip "credential required." unless @credential_available
       @api = Gcs.new(@email, @private_key)
     end
-    let(:root_items){ ["index.csv.gz", "index.csv.gz-0QQ39Y4953", "index.csv.gz-2S6K16H3ZD", "index.csv.gz-3ABLAEOD2T", "index.csv.gz-418JH42X0Y", "index.csv.gz-4YDVAZZCZT", "index.csv.gz-62ZC8HYJDE", "index.csv.gz-94TK4RY0HV", "index.csv.gz-9CPJ5CVBO4", "index.csv.gz-9JYPV8NZZP", "index.csv.gz-A6QF44PS0B", "index.csv.gz-BVVBYIFND0", "index.csv.gz-ESKYT43SLI", "index.csv.gz-IEIRS8IBGZ", "index.csv.gz-MBVHDKD9D9", "index.csv.gz-N9VL5CEJF4", "index.csv.gz-NYKV6J71AN", "index.csv.gz-P8784XPLC2", "index.csv.gz-RLM54NPYDO", "index.csv.gz-WLE5DUHS44", "index.csv.gz-XJ6V0Z0JWJ", "index.csv.gz-YZAVOBBWV0", "index.csv.gz-Z2HDRBNIWV"] }
+    let(:root_items){ ["index.csv.gz"] }
     let(:root_prefixes){ %w{ LC08/ LE00/ LE07/ LM01/ LM02/ LM03/ LM04/ LM05/ LO08/ LT00/ LT04/ LT05/ LT08/ } }
     let(:lc08_items){ ["LC08/01_$folder$"] }
     let(:lc08_prefixes){ %w{ LC08/01/ LC08/PRE/ } }
@@ -84,7 +84,7 @@ describe Gcs do
     it "yields matched objects" do
       items = []
       @api.glob(pattern) {|obj| items << obj.name }
-      expect(items.size).to eql(252)
+      expect(items.size).to eql(408)
       expect(items.all?{|name| File.fnmatch("LC08/01/101/240/*/*.TIF", name) }).to be(true)
     end
   end

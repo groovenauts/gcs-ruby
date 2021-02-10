@@ -25,5 +25,5 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency "rake"
   spec.add_development_dependency "rake-compiler"
   spec.add_development_dependency "rspec"
-  spec.add_dependency "google-api-client"
+  spec.add_dependency "google-apis-storage_v1"
 end
