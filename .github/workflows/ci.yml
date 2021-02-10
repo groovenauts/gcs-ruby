@@ -54,21 +54,11 @@ jobs:
       # https://github.com/actions/checkout
       - uses: actions/checkout@v2
 
-      # https://github.com/actions/setup-python
-      - uses: actions/setup-ruby@v1
+      # https://github.com/ruby/setup-ruby
+      - uses: ruby/setup-ruby@v1
         with:
           ruby-version: ${{ matrix.ruby }}
-
-      # https://github.com/actions/cache
-      - uses: actions/cache@v1
-        with:
-          path: vendor/bundle
-          key: ${{ runner.os }}-bundle-${{ hashFiles('gcs.gemspec') }}
-          restore-keys: |
-            ${{ runner.os }}-bundle-
-
-      - name: Install dependencies
-        run: bundle install --path vendor/bundle
+          bundler-cache: true
 
       - name: save credential JSON key
         run: echo ${{ secrets.GCP_SA_KEY }} | base64 -d > config/service_account.json
